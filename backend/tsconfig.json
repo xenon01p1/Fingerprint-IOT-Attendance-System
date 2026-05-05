@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "./dist",
+    "rootDir": "./",             // Changed from ./src to ./ to include root configs
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["node"]            // Explicitly tell TS to use Node types
+  },
+  "include": [
+    "src/**/*", 
+    "prisma/**/*",               // Include your prisma folder
+    "prisma.config.ts",          // Include the specific config file
+    ".env"                       // Let TS see your env types if using plugins
+  ],
+  "exclude": ["node_modules", "dist"]
+}

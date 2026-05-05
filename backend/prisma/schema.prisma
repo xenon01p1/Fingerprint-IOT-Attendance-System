@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ======== ENUMS ========
+enum CompanyStatus {
+  active
+  paused
+  banned
+}
+
+enum EmployeeRole {
+  regular
+  supervisor
+}
+
+enum EmployeeCompanyStatus {
+  active
+  onLeave
+  resigned
+}
+
+enum EmployeeStatus {
+  active
+  banned
+  deleted
+}
+
+
+// ======== MODELS ========
+
+model Company{
+  id String @id @default(cuid())
+  name String
+  field String
+  address String
+  status CompanyStatus @default(active)
+  reason String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // back relation
+  devices Device[]
+  employees Employee[]
+}
+
+model Device{
+  id String @id @default(cuid())
+  name String
+  location String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // foreign key
+  companyId String
+
+  // relations
+  company Company @relation(fields: [companyId], references: [id])
+
+  // back relation
+  fingerprints Fingerprint[]
+}
+
+model Admin {
+  id String @id @default(cuid())
+  username String @unique
+  password String
+  email String @unique
+  phoneNumber String @unique
+  refreshToken String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Employee{
+  id String @id @default(cuid())
+  employeeNumber Int @unique
+  fullname String
+  username String @unique
+  password String
+  email String @unique
+  phoneNumber String @unique
+  refreshToken String?
+  role EmployeeRole @default(regular)
+  employeeStatus EmployeeCompanyStatus @default(active)
+  status EmployeeStatus @default(active)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt 
+
+  // foreign key
+  companyId String
+
+  // relations
+  company Company @relation(fields: [companyId], references: [id])
+
+  // back relation
+  fingerprints Fingerprint[]
+}
+
+model Fingerprint{
+  id String @id @default(cuid())
+  fingerPrintIndex Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // foreign key
+  employeeId String
+  deviceId String
+
+  // relations
+  employee Employee @relation(fields: [employeeId], references: [id])
+  device Device @relation(fields: [deviceId], references: [id])
+}
