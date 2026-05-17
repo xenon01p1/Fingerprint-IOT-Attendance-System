@@ -11,6 +11,8 @@ const authRepo = new AuthRepository(prisma);
 const authService = new AuthService(authRepo);
 const authController = new AuthController(authService);
 
-authRoute.post('/admin/login', authController.adminLoginController);
+authRoute.post('/login', authController.adminLoginController);
+authRoute.post('/refreshToken', authController.refreshTokenController);
+
 
 export default authRoute;

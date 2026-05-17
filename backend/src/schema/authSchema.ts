@@ -1,30 +1,8 @@
 import { z } from "zod";
 import { BaseResponseSchema } from "./baseSchema.js";
+import { AdminSchema, PublicAdminSchema } from "./adminSchema.js";
 
-export const AdminSchema = z.object({
-    id: z.string(),
-    username: z.string().min(3).max(100),
-    password: z.string().min(6),
-    email: z.email(),
-    phoneNumber: z.string().min(5).max(20),
-    accessToken: z.string().nullable(),
-    refreshToken: z.string().nullable(),
-    createdAt: z.date(),
-    updatedAt: z.date()
-});
-
-export const PublicAdminSchema = AdminSchema.pick({
-    id: true,
-    username: true,
-    email: true,
-    phoneNumber: true,
-    accessToken: true,
-    refreshToken: true,
-    createdAt: true,
-    updatedAt: true
-});
-
-// ========================== Login Admin request ==========================
+// ========================== Request Schema ==========================
 export const LoginAdminSchema = AdminSchema.pick({
     username: true,
     password: true
@@ -40,8 +18,19 @@ export const LoginAdminSchema = AdminSchema.pick({
 */
 export type LoginAdminInput = z.infer<typeof LoginAdminSchema>;
 
+export const refreshTokenSchema = AdminSchema.pick({
+    refreshToken: true
+});
+export type refreshTokenInput = z.infer<typeof refreshTokenSchema>;
 
-// ========================== Login Admin response ==========================
+
+// ========================== Response Schema ==========================
 export const LoginAdminResponseSchema = BaseResponseSchema(PublicAdminSchema);
 export type LoginAdminResponse = z.infer<typeof LoginAdminResponseSchema>;
+
+export const refreshTokenResponseSchema = BaseResponseSchema(AdminSchema.pick({
+    accessToken: true,
+    refreshToken: true
+}));
+export type refreshTokenResponse = z.infer<typeof refreshTokenResponseSchema>;
 

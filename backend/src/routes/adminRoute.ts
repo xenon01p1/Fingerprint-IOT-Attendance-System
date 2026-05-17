@@ -1,0 +1,20 @@
+import express from "express";
+import { PrismaClient } from "@prisma/client";
+import AdminController from "../controllers/adminController.js";
+import AdminService from "../services/adminService.js";
+import AdminRepository from "../repositories/adminRepo.js";
+
+const adminRoute = express.Router();
+const prisma = new PrismaClient();
+
+const adminRepo = new AdminRepository(prisma);
+const adminService = new AdminService(adminRepo);
+const adminController = new AdminController(adminService);
+
+adminRoute.get('/', adminController.getAllAdminController);
+adminRoute.get('/:adminId', adminController.getAdminController);
+adminRoute.post('/', adminController.createAdminController);
+adminRoute.put('/:adminId', adminController.updateAdminController);
+adminRoute.delete('/:adminId', adminController.deleteAdminController);
+
+export default adminRoute;
