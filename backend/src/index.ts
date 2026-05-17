@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import { globalErrorHandler } from './middlewares/globalErrorMiddleware.js';
 import authRoute from './routes/authRoute.js';
 import adminRoute from './routes/adminRoute.js';
+import employeeRoute from './routes/employeeRoute.js';
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.use(express.json());
 
 app.use('/admin', authRoute);
 app.use('/admin', adminRoute);
+app.use('/employee', employeeRoute);
 
 app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'Fingerprint Admin API is Running' });
