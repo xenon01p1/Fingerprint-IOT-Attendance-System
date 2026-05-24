@@ -31,28 +31,41 @@ enum EmployeeStatus {
   deleted
 }
 
+enum AttendanceType {
+  checkIn
+  checkOut
+}
+
+enum LogDeviceType {
+  register
+  finishRegister
+  checkIn
+  checkOut
+  delete
+}
+
 
 // ======== MODELS ========
 
-model Company{
-  id String @id @default(cuid())
-  name String
-  field String
-  address String
-  status CompanyStatus @default(active)
-  reason String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Company {
+  id        String        @id @default(cuid())
+  name      String
+  field     String
+  address   String
+  status    CompanyStatus @default(active)
+  reason    String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 
   // back relation
-  devices Device[]
+  devices   Device[]
   employees Employee[]
 }
 
-model Device{
-  id String @id @default(cuid())
-  name String
-  location String
+model Device {
+  id        String   @id @default(cuid())
+  name      String
+  location  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -64,33 +77,35 @@ model Device{
 
   // back relation
   fingerprints Fingerprint[]
+  attendances  Attendance[]
+  logDevices   LogDevice[]
 }
 
 model Admin {
-  id String @id @default(cuid())
-  username String @unique
-  password String
-  email String @unique
-  phoneNumber String @unique
+  id          String   @id @default(cuid())
+  username    String   @unique
+  password    String
+  email       String   @unique
+  phoneNumber String   @unique
   refreshToken String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
-model Employee{
-  id String @id @default(cuid())
-  employeeNumber Int @unique
-  fullname String
-  username String @unique
-  password String
-  email String @unique
-  phoneNumber String @unique
-  refreshToken String?
-  role EmployeeRole @default(regular)
+model Employee {
+  id             String                @id @default(cuid())
+  employeeNumber Int                   @unique
+  fullname       String
+  username       String                @unique
+  password       String
+  email          String                @unique
+  phoneNumber    String                @unique
+  refreshToken   String?
+  role           EmployeeRole          @default(regular)
   employeeStatus EmployeeCompanyStatus @default(active)
-  status EmployeeStatus @default(active)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt 
+  status         EmployeeStatus        @default(active)
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt 
 
   // foreign key
   companyId String
@@ -100,19 +115,56 @@ model Employee{
 
   // back relation
   fingerprints Fingerprint[]
+  attendances  Attendance[]
 }
 
-model Fingerprint{
-  id String @id @default(cuid())
+model Fingerprint {
+  id               String   @id @default(cuid())
   fingerPrintIndex Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   // foreign key
   employeeId String
-  deviceId String
+  deviceId   String
 
   // relations
-  employee Employee @relation(fields: [employeeId], references: [id])
-  device Device @relation(fields: [deviceId], references: [id])
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  device   Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  // back relation
+  logDevices LogDevice[]
+}
+
+model Attendance {
+  id        String         @id @default(cuid())
+  type      AttendanceType
+  createdAt DateTime       @default(now())
+
+  // foreign key
+  employeeId String
+  deviceId   String? // Changed to optional for manual admin entries
+
+  // relation 
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  device   Device?  @relation(fields: [deviceId], references: [id], onDelete: SetNull) // Keeps logs safe if hardware is deleted
+
+  @@index([employeeId])
+  @@index([createdAt])
+}
+
+model LogDevice {
+  id        String        @id @default(cuid())
+  type      LogDeviceType
+  createdAt DateTime      @default(now())
+
+  // foreign key
+  fingerprintId String
+  deviceId      String
+
+  // relation 
+  fingerprint Fingerprint @relation(fields: [fingerprintId], references: [id], onDelete: Cascade)
+  device      Device      @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@index([deviceId])
 }
