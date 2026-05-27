@@ -3,21 +3,39 @@ import AdminRepository from "../repositories/adminRepo.js";
 class AdminService {
     constructor(private adminRepo: AdminRepository) {}
 
-    async getAllAdminService() {
-        const adminsData = await this.adminRepo.getAllAdmin();
+    async getAllAdminService(page: number = 1, pageSize: number = 10) {
+        // Validate pagination params
+        const validPage = Math.max(1, page);
+        const validPageSize = Math.max(1, Math.min(pageSize, 100)); // Cap at 100
         
-        if (!adminsData || adminsData.length === 0) {
-            throw new Error("Admin data not found");
-        }  
+        const skip = (validPage - 1) * validPageSize;
+        const take = validPageSize;
 
-        return adminsData.map(admin => ({
-            id: admin.id,
-            username: admin.username,
-            email: admin.email,
-            phoneNumber: admin.phoneNumber,
-            createdAt: admin.createdAt,
-            updatedAt: admin.updatedAt
-        }));
+        const adminsData = await this.adminRepo.getAllAdmin(skip, take);
+        const totalItems = await this.adminRepo.getAdminCount();
+        
+        if (!adminsData) {
+            throw new Error("Admin data not found");
+        }
+
+        const totalPages = Math.ceil(totalItems / validPageSize);
+
+        return {
+            items: adminsData.map(admin => ({
+                id: admin.id,
+                username: admin.username,
+                email: admin.email,
+                phoneNumber: admin.phoneNumber,
+                createdAt: admin.createdAt,
+                updatedAt: admin.updatedAt
+            })),
+            pagination: {
+                currentPage: validPage,
+                pageSize: validPageSize,
+                totalItems,
+                totalPages
+            }
+        };
     }
     
     async getAdminService(adminId: string) {

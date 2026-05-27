@@ -4,27 +4,45 @@ import { createEmployeeInput, updateEmployeeInput } from "../schema/employeeSche
 class EmployeeService {
     constructor(private employeeRepo: EmployeeRepository) {}
 
-    async getAllEmployeeService() {
-        const employeesData = await this.employeeRepo.getAllEmployee();
+    async getAllEmployeeService(page: number = 1, pageSize: number = 10) {
+        // Validate pagination params
+        const validPage = Math.max(1, page);
+        const validPageSize = Math.max(1, Math.min(pageSize, 100)); // Cap at 100
+        
+        const skip = (validPage - 1) * validPageSize;
+        const take = validPageSize;
 
-        if (!employeesData || employeesData.length === 0) {
+        const employeesData = await this.employeeRepo.getAllEmployee(skip, take);
+        const totalItems = await this.employeeRepo.getEmployeeCount();
+        
+        if (!employeesData) {
             throw new Error("Employee data not found");
         }
 
-        return employeesData.map(employee => ({
-            id: employee.id,
-            employeeNumber: employee.employeeNumber,
-            fullname: employee.fullname,
-            username: employee.username,
-            email: employee.email,
-            phoneNumber: employee.phoneNumber,
-            role: employee.role,
-            employeeStatus: employee.employeeStatus,
-            status: employee.status,
-            companyId: employee.companyId,
-            createdAt: employee.createdAt,
-            updatedAt: employee.updatedAt
-        }));
+        const totalPages = Math.ceil(totalItems / validPageSize);
+
+        return {
+            items: employeesData.map(employee => ({
+                id: employee.id,
+                employeeNumber: employee.employeeNumber,
+                fullname: employee.fullname,
+                username: employee.username,
+                email: employee.email,
+                phoneNumber: employee.phoneNumber,
+                role: employee.role,
+                employeeStatus: employee.employeeStatus,
+                status: employee.status,
+                companyId: employee.companyId,
+                createdAt: employee.createdAt,
+                updatedAt: employee.updatedAt
+            })),
+            pagination: {
+                currentPage: validPage,
+                pageSize: validPageSize,
+                totalItems,
+                totalPages
+            }
+        };
     }
 
     async getEmployeeService(employeeId: string) {

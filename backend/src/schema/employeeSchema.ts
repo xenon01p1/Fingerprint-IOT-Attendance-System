@@ -45,6 +45,14 @@ export type createEmployeeInput = z.infer<typeof createEmployeeSchema>;
 export const updateEmployeeSchema = createEmployeeSchema.partial();
 export type updateEmployeeInput = z.infer<typeof updateEmployeeSchema>;
 
+// =========== PAGINATION SCHEMA =============
+const paginationSchema = z.object({
+    currentPage: z.number(),
+    pageSize: z.number(),
+    totalItems: z.number(),
+    totalPages: z.number()
+});
+
 // =========== DATA OBJECTS (INNER SCHEMAS) =============
 const employeeIdDataSchema = EmployeeSchema.pick({
     id: true,
@@ -74,5 +82,10 @@ export type employeeIdResponse = z.infer<typeof employeeIdResponseSchema>;
 export const singleEmployeeResponseSchema = BaseResponseSchema(singleEmployeeDataSchema);
 export type singleEmployeeResponse = z.infer<typeof singleEmployeeResponseSchema>;
 
-export const allEmployeeResponseSchema = BaseResponseSchema(allEmployeeDataSchema);
+const allEmployeeDataWithPaginationSchema = z.object({
+    items: allEmployeeDataSchema,
+    pagination: paginationSchema
+});
+
+export const allEmployeeResponseSchema = BaseResponseSchema(allEmployeeDataWithPaginationSchema);
 export type allEmployeeResponse = z.infer<typeof allEmployeeResponseSchema>;

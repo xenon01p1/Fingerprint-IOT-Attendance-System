@@ -3,8 +3,18 @@ import { PrismaClient, Employee } from "@prisma/client";
 class EmployeeRepository {
     constructor(private prisma: PrismaClient) {}
 
-    async getAllEmployee(): Promise<Employee[] | null> {
+    async getAllEmployee(skip?: number, take?: number): Promise<Employee[] | null> {
+        if (skip !== undefined && take !== undefined) {
+            return this.prisma.employee.findMany({
+                skip,
+                take
+            });
+        }
         return this.prisma.employee.findMany();
+    }
+
+    async getEmployeeCount(): Promise<number> {
+        return this.prisma.employee.count();
     }
 
     async getEmployee(employeeId: string): Promise<Employee | null> {

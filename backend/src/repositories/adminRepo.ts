@@ -3,8 +3,18 @@ import { PrismaClient, Admin } from "@prisma/client"; // Use Employee, not User
 class AdminRepository {
     constructor(private prisma: PrismaClient) {};
 
-    async getAllAdmin(): Promise<Admin[] | null>  {
+    async getAllAdmin(skip?: number, take?: number): Promise<Admin[] | null>  {
+        if (skip !== undefined && take !== undefined) {
+            return this.prisma.admin.findMany({
+                skip,
+                take
+            });
+        }
         return this.prisma.admin.findMany();
+    }
+
+    async getAdminCount(): Promise<number> {
+        return this.prisma.admin.count();
     }
 
     async getAdmin(adminId: string): Promise<Admin | null> {

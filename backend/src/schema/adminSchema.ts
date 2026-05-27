@@ -42,6 +42,14 @@ export const updateAdminSchema = createAdminSchema.partial();
 export type updateAdminInput = z.infer<typeof updateAdminSchema>;
 
 
+// =========== PAGINATION SCHEMA =============
+const paginationSchema = z.object({
+    currentPage: z.number(),
+    pageSize: z.number(),
+    totalItems: z.number(),
+    totalPages: z.number()
+});
+
 // =========== DATA OBJECTS (INNER SCHEMAS) =============
 const adminIdDataSchema = AdminSchema.pick({
     id: true,
@@ -66,5 +74,10 @@ export type adminIdResponse = z.infer<typeof adminIdResponseSchema>;
 export const singleAdminResponseSchema = BaseResponseSchema(singleAdminDataSchema);
 export type singleAdminResponse = z.infer<typeof singleAdminResponseSchema>;
 
-export const allAdminResponseSchema = BaseResponseSchema(allAdminDataSchema);
+const allAdminDataWithPaginationSchema = z.object({
+    items: allAdminDataSchema,
+    pagination: paginationSchema
+});
+
+export const allAdminResponseSchema = BaseResponseSchema(allAdminDataWithPaginationSchema);
 export type allAdminResponse = z.infer<typeof allAdminResponseSchema>;

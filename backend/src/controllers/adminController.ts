@@ -17,12 +17,15 @@ class AdminController {
         next: NextFunction
     ) => {
         try {
-            const admins = await this.adminService.getAllAdminService();
+            const page = parseInt(req.query.page as string) || 1;
+            const pageSize = parseInt(req.query.pageSize as string) || 10;
+            
+            const result = await this.adminService.getAllAdminService(page, pageSize);
 
             res.status(200).json({
                 status: true,
                 message: "Admins retrieved successfully",
-                data: admins
+                data: result
             });
         } catch (error) {
             next(error);
