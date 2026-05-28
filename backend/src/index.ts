@@ -21,9 +21,9 @@ app.use(express.json());
 
 // Routes ========================
 
-app.use('/auth', authRoute);
-app.use('/admin', adminRoute);
-app.use('/employee', employeeRoute);
+app.use('/api/auth', authRoute);
+app.use('/api/admin', adminRoute);
+app.use('/api/employee', employeeRoute);
 
 app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'Fingerprint Admin API is Running' });
