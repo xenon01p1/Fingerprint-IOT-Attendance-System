@@ -11,7 +11,7 @@ import employeeRoute from './routes/employeeRoute.js';
 dotenv.config();
 
 const app: Application = express();
-const PORT = process.env.PORT || 8000;
+const PORT = 8000;
 
 // Middlewares ===================
 app.use(helmet());      // Basic security headers
@@ -21,7 +21,7 @@ app.use(express.json());
 
 // Routes ========================
 
-app.use('/admin', authRoute);
+app.use('/auth', authRoute);
 app.use('/admin', adminRoute);
 app.use('/employee', employeeRoute);
 
