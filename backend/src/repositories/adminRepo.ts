@@ -6,20 +6,25 @@ class AdminRepository {
     async getAllAdmin(skip?: number, take?: number): Promise<Admin[] | null>  {
         if (skip !== undefined && take !== undefined) {
             return this.prisma.admin.findMany({
+                where: { isDeleted: false },
                 skip,
                 take
             });
         }
-        return this.prisma.admin.findMany();
+        return this.prisma.admin.findMany({
+            where: { isDeleted: false }
+        });
     }
 
     async getAdminCount(): Promise<number> {
-        return this.prisma.admin.count();
+        return this.prisma.admin.count({
+            where: { isDeleted: false }
+        });
     }
 
     async getAdmin(adminId: string): Promise<Admin | null> {
         return this.prisma.admin.findFirst({
-            where: { id: adminId }
+            where: { id: adminId, isDeleted: false }
         });
     }
 
@@ -55,8 +60,9 @@ class AdminRepository {
     }
 
     async deleteAdmin(adminId: string): Promise<Admin | null> {
-        return this.prisma.admin.delete({
-             where: { id: adminId }
+        return this.prisma.admin.update({
+            where: { id: adminId },
+            data: { isDeleted: true }
         });
     }
 }

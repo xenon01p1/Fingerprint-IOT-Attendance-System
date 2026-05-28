@@ -56,6 +56,7 @@ model Company {
   reason    String?
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
+  isDeleted Boolean  @default(false)
 
   // back relation
   devices   Device[]
@@ -68,6 +69,7 @@ model Device {
   location  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  isDeleted Boolean  @default(false)
 
   // foreign key
   companyId String
@@ -90,6 +92,7 @@ model Admin {
   refreshToken String? @db.Text
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  isDeleted   Boolean  @default(false)
 }
 
 model Employee {
@@ -106,6 +109,7 @@ model Employee {
   status         EmployeeStatus        @default(active)
   createdAt      DateTime              @default(now())
   updatedAt      DateTime              @updatedAt 
+  isDeleted      Boolean  @default(false)
 
   // foreign key
   companyId String
