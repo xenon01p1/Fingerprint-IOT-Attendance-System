@@ -187,6 +187,69 @@ You can set up environment variables in Postman to make testing easier:
 
 ---
 
+## Attendance Endpoints
+
+### 1. Get All Attendance Records
+**GET** `/api/attendance?page=1&pageSize=10`
+
+**Response:**
+```json
+{
+  "status": true,
+  "message": "Attendance records retrieved successfully",
+  "data": {
+    "items": [
+      {
+        "id": "attendance-id-1",
+        "type": "checkIn",
+        "employee": {
+          "id": "emp-id",
+          "employeeNumber": 1001,
+          "fullname": "John Doe",
+          "username": "johndoe",
+          "email": "john@company.com"
+        },
+        "device": {
+          "id": "device-id",
+          "name": "Device 01",
+          "location": "Gate A"
+        },
+        "createdAt": "2026-05-28T10:30:00Z"
+      }
+    ],
+    "pagination": {
+      "currentPage": 1,
+      "pageSize": 10,
+      "totalItems": 22,
+      "totalPages": 3
+    }
+  }
+}
+```
+
+### 2. Get Single Attendance Record
+**GET** `/api/attendance/:attendanceId`
+
+Example: `http://localhost:8000/api/attendance/attendance-id-1`
+
+### 3. Create Attendance Record
+**POST** `/api/attendance`
+
+**Body (JSON):**
+```json
+{
+  "type": "checkIn",
+  "employeeId": "emp-id-123",
+  "deviceId": "device-id-456"
+}
+```
+
+**Available types:** `checkIn` or `checkOut`
+
+**Note:** `deviceId` is optional (for manual admin entries)
+
+---
+
 ## Tips
 
 - Always include valid IDs (use GET endpoints to find them first)
@@ -194,3 +257,4 @@ You can set up environment variables in Postman to make testing easier:
 - Phone numbers should follow your validation rules
 - Email must be unique across the system
 - Username must be unique across the system
+

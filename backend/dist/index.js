@@ -7,6 +7,7 @@ import { globalErrorHandler } from './middlewares/globalErrorMiddleware.js';
 import authRoute from './routes/authRoute.js';
 import adminRoute from './routes/adminRoute.js';
 import employeeRoute from './routes/employeeRoute.js';
+import attendanceRoute from './routes/attendanceRoute.js';
 dotenv.config();
 const app = express();
 const PORT = 8000;
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use('/api/auth', authRoute);
 app.use('/api/admin', adminRoute);
 app.use('/api/employee', employeeRoute);
+app.use('/api/attendance', attendanceRoute);
 app.get('/', (req, res) => {
     res.json({ message: 'Fingerprint Admin API is Running' });
 });

@@ -7,18 +7,23 @@ class AdminRepository {
     async getAllAdmin(skip, take) {
         if (skip !== undefined && take !== undefined) {
             return this.prisma.admin.findMany({
+                where: { isDeleted: false },
                 skip,
                 take
             });
         }
-        return this.prisma.admin.findMany();
+        return this.prisma.admin.findMany({
+            where: { isDeleted: false }
+        });
     }
     async getAdminCount() {
-        return this.prisma.admin.count();
+        return this.prisma.admin.count({
+            where: { isDeleted: false }
+        });
     }
     async getAdmin(adminId) {
         return this.prisma.admin.findFirst({
-            where: { id: adminId }
+            where: { id: adminId, isDeleted: false }
         });
     }
     async createAdmin(username, password, email, phoneNumber) {
@@ -38,8 +43,9 @@ class AdminRepository {
         });
     }
     async deleteAdmin(adminId) {
-        return this.prisma.admin.delete({
-            where: { id: adminId }
+        return this.prisma.admin.update({
+            where: { id: adminId },
+            data: { isDeleted: true }
         });
     }
 }
