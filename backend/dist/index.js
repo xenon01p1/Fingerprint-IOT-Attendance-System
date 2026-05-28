@@ -8,6 +8,7 @@ import authRoute from './routes/authRoute.js';
 import adminRoute from './routes/adminRoute.js';
 import employeeRoute from './routes/employeeRoute.js';
 import attendanceRoute from './routes/attendanceRoute.js';
+import logDeviceRoute from './routes/logDeviceRoute.js';
 dotenv.config();
 const app = express();
 const PORT = 8000;
@@ -21,6 +22,7 @@ app.use('/api/auth', authRoute);
 app.use('/api/admin', adminRoute);
 app.use('/api/employee', employeeRoute);
 app.use('/api/attendance', attendanceRoute);
+app.use('/api/logDevice', logDeviceRoute);
 app.get('/', (req, res) => {
     res.json({ message: 'Fingerprint Admin API is Running' });
 });

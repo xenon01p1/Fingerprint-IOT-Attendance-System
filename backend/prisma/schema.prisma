@@ -80,7 +80,6 @@ model Device {
   // back relation
   fingerprints Fingerprint[]
   attendances  Attendance[]
-  logDevices   LogDevice[]
 }
 
 model Admin {
@@ -164,11 +163,8 @@ model LogDevice {
 
   // foreign key
   fingerprintId String
-  deviceId      String
 
   // relation 
   fingerprint Fingerprint @relation(fields: [fingerprintId], references: [id], onDelete: Cascade)
-  device      Device      @relation(fields: [deviceId], references: [id], onDelete: Cascade)
 
-  @@index([deviceId])
 }

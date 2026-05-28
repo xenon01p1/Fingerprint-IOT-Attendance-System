@@ -250,6 +250,67 @@ Example: `http://localhost:8000/api/attendance/attendance-id-1`
 
 ---
 
+## Log Device Endpoints
+
+### 1. Get All Log Device Records
+**GET** `/api/logDevice?page=1&pageSize=10`
+
+**Response:**
+```json
+{
+  "status": true,
+  "message": "Log device records retrieved successfully",
+  "data": {
+    "items": [
+      {
+        "id": "logdevice-id-1",
+        "type": "checkIn",
+        "fingerprintId": "fingerprint-id",
+        "fingerprint": {
+          "id": "fingerprint-id",
+          "fingerPrintIndex": 1,
+          "employeeId": "emp-id",
+          "deviceId": "device-id"
+        },
+        "createdAt": "2026-05-28T10:30:00Z"
+      }
+    ],
+    "pagination": {
+      "currentPage": 1,
+      "pageSize": 10,
+      "totalItems": 22,
+      "totalPages": 3
+    }
+  }
+}
+```
+
+### 2. Get Single Log Device Record
+**GET** `/api/logDevice/:logDeviceId`
+
+Example: `http://localhost:8000/api/logDevice/logdevice-id-1`
+
+### 3. Create Log Device Record
+**POST** `/api/logDevice`
+
+**Body (JSON):**
+```json
+{
+  "type": "checkIn",
+  "fingerprintId": "fingerprint-id-123",
+  "deviceId": "device-id-456"
+}
+```
+
+**Available types:** 
+- `register` - Register fingerprint
+- `finishRegister` - Finish registration
+- `checkIn` - Check in event
+- `checkOut` - Check out event
+- `delete` - Delete event
+
+---
+
 ## Tips
 
 - Always include valid IDs (use GET endpoints to find them first)
@@ -257,4 +318,5 @@ Example: `http://localhost:8000/api/attendance/attendance-id-1`
 - Phone numbers should follow your validation rules
 - Email must be unique across the system
 - Username must be unique across the system
+
 
