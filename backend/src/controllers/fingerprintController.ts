@@ -1,4 +1,5 @@
 import FingerprintService from "../services/fingerprintService.js";
+import { AppError } from "../middlewares/globalErrorMiddleware.js";
 
 import type {
     Request,
@@ -45,24 +46,32 @@ class FingerprintController {
     };
 
     deleteFingerprint = async (
-        req: Request<{}, {}, DeleteFingerprintInput>,
+        req: Request<{ id: string }, {}, DeleteFingerprintInput>,
         res: Response,
         next: NextFunction
     ) => {
 
         try {
 
-            const { fingerprintIndex } = req.body;
+            const { id: fingerprintId } = req.params;
+
+            if (!fingerprintId) {
+                throw new AppError(
+                    "Fingerprint ID is required",
+                    400
+                );
+            }
 
             const result =
                 await this.fingerprintService
                     .deleteFingerprintService(
-                        fingerprintIndex
+                        fingerprintId
                     );
 
             res.status(200).json({
                 status: true,
-                message: result.message
+                message: result.message,
+                data: result.data
             });
 
         } catch (error) {

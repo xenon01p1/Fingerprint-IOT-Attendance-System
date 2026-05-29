@@ -1,9 +1,13 @@
 import { MqttClient } from "mqtt";
 import { AppError } from "../middlewares/globalErrorMiddleware.js";
+import FingerprintRepository from "../repositories/fingerprintRepo.js";
 
 class FingerprintService {
 
-    constructor(private mqttClient: MqttClient) {}
+    constructor(
+        private mqttClient: MqttClient,
+        private fingerprintRepository: FingerprintRepository
+    ) {}
 
     async registerFingerprintService(
         fingerprintIndex: number
@@ -43,13 +47,22 @@ class FingerprintService {
     }
 
     async deleteFingerprintService(
-        fingerprintIndex: number
+        fingerprintId: string
     ) {
 
         try {
 
+            const fingerprint = await this.fingerprintRepository.getFingerprint(fingerprintId);
+
+            if (!fingerprint) {
+                throw new AppError(
+                    "Fingerprint not found",
+                    404
+                );
+            }
+
             const payload = JSON.stringify({
-                template_id: fingerprintIndex
+                template_id: fingerprint.fingerPrintIndex
             });
 
             await new Promise<void>((resolve, reject) => {
@@ -65,15 +78,31 @@ class FingerprintService {
                 );
             });
 
+            const deletedFingerprint = await this.fingerprintRepository.deleteFingerprint(fingerprintId);
+
+            if (!deletedFingerprint) {
+                throw new AppError(
+                    "Failed to delete fingerprint from database",
+                    500
+                );
+            }
+
             return {
                 status: true,
-                message: "Fingerprint deletion started"
+                message: "Fingerprint deleted successfully",
+                data: {
+                    id: deletedFingerprint.id
+                }
             };
 
-        } catch {
+        } catch (error) {
+
+            if (error instanceof AppError) {
+                throw error;
+            }
 
             throw new AppError(
-                "Failed to publish fingerprint deletion",
+                "Failed to delete fingerprint",
                 500
             );
         }
