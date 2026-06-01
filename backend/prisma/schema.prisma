@@ -66,6 +66,7 @@ model Company {
 model Device {
   id        String   @id @default(cuid())
   name      String
+  address   String   @default("")
   location  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

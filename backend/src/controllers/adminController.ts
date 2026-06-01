@@ -11,16 +11,17 @@ import {
 class AdminController {
     constructor(private adminService: AdminService) {}
 
+    // Request<Params, ResponseBody, RequestBody, Query>
     getAllAdminController = async (
-        req: Request<{}, allAdminResponse, {}>,
+        req: Request<{ }, allAdminResponse, {}>,
         res: Response<allAdminResponse>,
         next: NextFunction
     ) => {
         try {
-            const page = parseInt(req.query.page as string) || 1;
-            const pageSize = parseInt(req.query.pageSize as string) || 10;
-            
-            const result = await this.adminService.getAllAdminService(page, pageSize);
+            const pageInt = parseInt(req.query.page as string) || 1;
+            const pageSizeInt = parseInt(req.query.pageSize as string) || 10;
+
+            const result = await this.adminService.getAllAdminService(pageInt, pageSizeInt);
 
             res.status(200).json({
                 status: true,

@@ -1,3 +1,4 @@
+import { AppError } from "../middlewares/globalErrorMiddleware.js";
 class FingerprintController {
     fingerprintService;
     constructor(fingerprintService) {
@@ -19,12 +20,16 @@ class FingerprintController {
     };
     deleteFingerprint = async (req, res, next) => {
         try {
-            const { fingerprintIndex } = req.body;
+            const { id: fingerprintId } = req.params;
+            if (!fingerprintId) {
+                throw new AppError("Fingerprint ID is required", 400);
+            }
             const result = await this.fingerprintService
-                .deleteFingerprintService(fingerprintIndex);
+                .deleteFingerprintService(fingerprintId);
             res.status(200).json({
                 status: true,
-                message: result.message
+                message: result.message,
+                data: result.data
             });
         }
         catch (error) {

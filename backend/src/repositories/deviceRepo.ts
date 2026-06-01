@@ -13,6 +13,10 @@ class DeviceRepository {
         return this.prisma.device.findMany();
     }
 
+    async getDeviceCount(): Promise<number> {
+        return this.prisma.device.count();
+    }
+
     async createDevice(
         data: {
             name: string,
@@ -45,3 +49,5 @@ class DeviceRepository {
         });
     }
 }
+
+export default DeviceRepository;

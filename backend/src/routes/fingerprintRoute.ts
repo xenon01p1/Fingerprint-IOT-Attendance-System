@@ -11,24 +11,24 @@ const fingerprintRoute = express.Router();
 // DEPENDENCY INJECTION
 // ======================
 
-const fingerprintService =
-    new FingerprintService(mqttClient);
+// const fingerprintService =
+//     new FingerprintService(mqttClient, fingerprintRepository);
 
-const fingerprintController =
-    new FingerprintController(fingerprintService);
+// const fingerprintController =
+//     new FingerprintController(fingerprintService);
 
-// ======================
-// ROUTES
-// ======================
+// // ======================
+// // ROUTES
+// // ======================
 
-fingerprintRoute.post(
-    "/register-fingerprint",
-    fingerprintController.fingerprintRegister
-);
+// fingerprintRoute.post(
+//     "/register-fingerprint",
+//     fingerprintController.fingerprintRegister
+// );
 
-fingerprintRoute.delete(
-    "/delete-fingerprint",
-    fingerprintController.deleteFingerprint
-);
+// fingerprintRoute.delete(
+//     "/delete-fingerprint",
+//     fingerprintController.deleteFingerprint
+// );
 
 export default fingerprintRoute;

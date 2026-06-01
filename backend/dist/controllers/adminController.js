@@ -3,11 +3,12 @@ class AdminController {
     constructor(adminService) {
         this.adminService = adminService;
     }
+    // Request<Params, ResponseBody, RequestBody, Query>
     getAllAdminController = async (req, res, next) => {
         try {
-            const page = parseInt(req.query.page) || 1;
-            const pageSize = parseInt(req.query.pageSize) || 10;
-            const result = await this.adminService.getAllAdminService(page, pageSize);
+            const pageInt = parseInt(req.query.page) || 1;
+            const pageSizeInt = parseInt(req.query.pageSize) || 10;
+            const result = await this.adminService.getAllAdminService(pageInt, pageSizeInt);
             res.status(200).json({
                 status: true,
                 message: "Admins retrieved successfully",

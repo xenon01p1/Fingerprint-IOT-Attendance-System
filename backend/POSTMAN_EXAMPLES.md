@@ -250,6 +250,156 @@ Example: `http://localhost:8000/api/attendance/attendance-id-1`
 
 ---
 
+## Device Endpoints
+
+### 1. Get All Devices
+**GET** `/api/device?page=1&pageSize=10`
+
+**Response:**
+```json
+{
+  "status": true,
+  "message": "Devices retrieved successfully",
+  "data": {
+    "items": [
+      {
+        "id": "device-001",
+        "name": "Fingerprint Device A",
+        "address": "123 Main Street",
+        "location": "Main Gate",
+        "createdAt": "2026-05-28T10:30:00Z",
+        "updatedAt": "2026-05-28T10:30:00Z",
+        "companyId": "company-123",
+        "isDeleted": false
+      },
+      {
+        "id": "device-002",
+        "name": "Fingerprint Device B",
+        "address": "456 Side Avenue",
+        "location": "Back Entrance",
+        "createdAt": "2026-05-29T09:15:00Z",
+        "updatedAt": "2026-05-29T09:15:00Z",
+        "companyId": "company-123",
+        "isDeleted": false
+      }
+    ],
+    "pagination": {
+      "currentPage": 1,
+      "pageSize": 10,
+      "totalItems": 2,
+      "totalPages": 1
+    }
+  }
+}
+```
+
+### 2. Create Device
+**POST** `/api/device`
+
+**Body (JSON):**
+```json
+{
+  "name": "Fingerprint Device C",
+  "address": "789 Office Park",
+  "location": "Front Lobby",
+  "companyId": "company-123"
+}
+```
+
+**Expected Response (201 Created):**
+```json
+{
+  "status": true,
+  "message": "Device created successfully",
+  "data": {
+    "id": "device-003"
+  }
+}
+```
+
+### 3. Update Device ⭐
+**PUT** `/api/device/:deviceId`
+
+Example: `http://localhost:8000/api/device/device-001`
+
+**Body (JSON):**
+```json
+{
+  "name": "Fingerprint Device A - Updated",
+  "address": "123 Main Street, Suite 100",
+  "location": "Main Gate - Entrance",
+  "companyId": "company-123",
+  "updatedAt": "2026-06-01T14:30:00Z"
+}
+```
+
+**Expected Response (200 OK):**
+```json
+{
+  "status": true,
+  "message": "Device updated successfully",
+  "data": {
+    "id": "device-001",
+    "name": "Fingerprint Device A - Updated",
+    "address": "123 Main Street, Suite 100",
+    "location": "Main Gate - Entrance",
+    "createdAt": "2026-05-28T10:30:00Z",
+    "updatedAt": "2026-06-01T14:30:00Z",
+    "companyId": "company-123",
+    "isDeleted": false
+  }
+}
+```
+
+**Note:** You can update individual fields - send only what you want to change.
+
+### 4. Delete Device ⭐
+**DELETE** `/api/device/:deviceId`
+
+Example: `http://localhost:8000/api/device/device-001`
+
+No body required.
+
+**Expected Response (200 OK):**
+```json
+{
+  "status": true,
+  "message": "Device deleted successfully",
+  "data": {
+    "id": "device-001"
+  }
+}
+```
+
+---
+
+## Testing Device Endpoints in Order
+
+Follow these steps to test all device endpoints:
+
+1. **GET All Devices** - First, retrieve all existing devices
+2. **POST Create Device** - Create a new device with the dummy data above
+3. **PUT Update Device** - Update the device you just created (use the returned `id`)
+4. **DELETE Device** - Delete the device you updated
+
+### Sample Test Flow:
+
+```
+Step 1: GET /api/device?page=1&pageSize=10
+  → Copy the device ID from response
+
+Step 2: POST /api/device
+  → Get back device ID (e.g., device-003)
+
+Step 3: PUT /api/device/device-003
+  → Using the ID from Step 2
+
+Step 4: DELETE /api/device/device-003
+  → Using the same ID from Step 2
+```
+
+---
+
 ## Log Device Endpoints
 
 ### 1. Get All Log Device Records

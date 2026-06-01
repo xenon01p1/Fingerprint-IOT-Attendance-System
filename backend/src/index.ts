@@ -9,6 +9,7 @@ import adminRoute from './routes/adminRoute.js';
 import employeeRoute from './routes/employeeRoute.js';
 import attendanceRoute from './routes/attendanceRoute.js';
 import logDeviceRoute from './routes/logDeviceRoute.js';
+import deviceRoute from './routes/deviceRoute.js';
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use('/api/admin', adminRoute);
 app.use('/api/employee', employeeRoute);
 app.use('/api/attendance', attendanceRoute);
 app.use('/api/logDevice', logDeviceRoute);
+app.use('/api/device', deviceRoute);
 
 app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'Fingerprint Admin API is Running' });

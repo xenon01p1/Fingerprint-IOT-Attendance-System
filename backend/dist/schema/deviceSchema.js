@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { BaseResponseSchema } from "./baseSchema.js";
-
 export const DeviceSchema = z.object({
     id: z.string(),
     name: z.string().min(3),
@@ -11,10 +10,8 @@ export const DeviceSchema = z.object({
     companyId: z.string(),
     isDeleted: z.boolean()
 });
-
-const allDeviceSchema = z.array(DeviceSchema)
+const allDeviceSchema = z.array(DeviceSchema);
 const deviceIdSchema = DeviceSchema.pick({ id: true });
-
 // ---------- PAGINATION SCHEMA =============
 const paginationSchema = z.object({
     currentPage: z.number(),
@@ -22,17 +19,13 @@ const paginationSchema = z.object({
     totalItems: z.number(),
     totalPages: z.number()
 });
-
 // =========== REQUEST =============
-
 export const createDeviceSchema = DeviceSchema.pick({
     name: true,
     address: true,
     location: true,
     companyId: true
 });
-export type createDeviceInput = z.infer<typeof createDeviceSchema>;
-
 export const updateDeviceSchema = DeviceSchema.pick({
     name: true,
     address: true,
@@ -40,20 +33,12 @@ export const updateDeviceSchema = DeviceSchema.pick({
     companyId: true,
     updatedAt: true
 });
-export type updateDeviceInput = z.infer<typeof updateDeviceSchema>;
-
-
 // =========== RESPONSE ============
-
 const getAllDevicePaginationSchema = z.object({
     items: allDeviceSchema,
     pagination: paginationSchema
 });
 const getAllDeviceResponseSchema = BaseResponseSchema(getAllDevicePaginationSchema);
-export type getAllDeviceResponse = z.infer<typeof getAllDeviceResponseSchema>;
-
 // export const createDeviceResponseSchema = BaseResponseSchema(createDeviceSchema);
 // export type createDeviceResponse = z.infer<typeof createDeviceResponseSchema>;
-
 export const deviceIdResponseSchema = BaseResponseSchema(deviceIdSchema);
-export type deviceIdResponse = z.infer<typeof deviceIdResponseSchema>;
