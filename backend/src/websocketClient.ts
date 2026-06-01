@@ -1,13 +1,19 @@
-import { WebSocketServer } from "ws";
+import { WebSocket, WebSocketServer } from "ws";
 
-const wss = new WebSocketServer({ port: 8080 });
+const WS_PORT = Number(process.env.WS_PORT || 8080);
 
-function broadcast(data: any): void {
-    wss.clients.forEach(client => {
-        if (client.readyState === client.OPEN) {
-            client.send(JSON.stringify(data));
+const wss = new WebSocketServer({ port: WS_PORT });
+
+function broadcast(data: unknown): void {
+    const payload = JSON.stringify(data);
+
+    wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(payload);
         }
     });
 }
+
+console.log(`WebSocket server running on port ${WS_PORT}`);
 
 export default broadcast;

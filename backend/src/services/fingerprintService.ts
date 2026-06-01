@@ -51,18 +51,9 @@ class FingerprintService {
     ) {
 
         try {
-
-            const fingerprint = await this.fingerprintRepository.getFingerprint(fingerprintId);
-
-            if (!fingerprint) {
-                throw new AppError(
-                    "Fingerprint not found",
-                    404
-                );
-            }
-
+            
             const payload = JSON.stringify({
-                template_id: fingerprint.fingerPrintIndex
+                template_id: fingerprintId
             });
 
             await new Promise<void>((resolve, reject) => {
@@ -78,20 +69,11 @@ class FingerprintService {
                 );
             });
 
-            const deletedFingerprint = await this.fingerprintRepository.deleteFingerprint(fingerprintId);
-
-            if (!deletedFingerprint) {
-                throw new AppError(
-                    "Failed to delete fingerprint from database",
-                    500
-                );
-            }
-
             return {
                 status: true,
                 message: "Fingerprint deleted successfully",
                 data: {
-                    id: deletedFingerprint.id
+                    id: fingerprintId
                 }
             };
 
