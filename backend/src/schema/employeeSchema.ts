@@ -71,6 +71,8 @@ const singleEmployeeDataSchema = EmployeeSchema.pick({
     companyId: true,
     createdAt: true,
     updatedAt: true
+}).extend({
+    fingerprintIndex: z.number().int().nullable()
 });
 
 const allEmployeeDataSchema = z.array(singleEmployeeDataSchema);

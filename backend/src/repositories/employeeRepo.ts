@@ -3,23 +3,57 @@ import { PrismaClient, Employee } from "@prisma/client";
 class EmployeeRepository {
     constructor(private prisma: PrismaClient) {}
 
-    async getAllEmployee(skip?: number, take?: number): Promise<Employee[] | null> {
+    async getAllEmployee(skip?: number, take?: number) {
         if (skip !== undefined && take !== undefined) {
             return this.prisma.employee.findMany({
                 skip,
-                take
+                take,
+                include: {
+                    fingerprints: {
+                        select: {
+                            fingerPrintIndex: true
+                        },
+                        take: 1,
+                        orderBy: {
+                            createdAt: 'desc'
+                        }
+                    }
+                }
             });
         }
-        return this.prisma.employee.findMany();
+        return this.prisma.employee.findMany({
+            include: {
+                fingerprints: {
+                    select: {
+                        fingerPrintIndex: true
+                    },
+                    take: 1,
+                    orderBy: {
+                        createdAt: 'desc'
+                    }
+                }
+            }
+        });
     }
 
     async getEmployeeCount(): Promise<number> {
         return this.prisma.employee.count();
     }
 
-    async getEmployee(employeeId: string): Promise<Employee | null> {
+    async getEmployee(employeeId: string) {
         return this.prisma.employee.findFirst({
-            where: { id: employeeId }
+            where: { id: employeeId },
+            include: {
+                fingerprints: {
+                    select: {
+                        fingerPrintIndex: true
+                    },
+                    take: 1,
+                    orderBy: {
+                        createdAt: 'desc'
+                    }
+                }
+            }
         });
     }
 

@@ -7,17 +7,51 @@ class EmployeeRepository {
         if (skip !== undefined && take !== undefined) {
             return this.prisma.employee.findMany({
                 skip,
-                take
+                take,
+                include: {
+                    fingerprints: {
+                        select: {
+                            fingerPrintIndex: true
+                        },
+                        take: 1,
+                        orderBy: {
+                            createdAt: 'desc'
+                        }
+                    }
+                }
             });
         }
-        return this.prisma.employee.findMany();
+        return this.prisma.employee.findMany({
+            include: {
+                fingerprints: {
+                    select: {
+                        fingerPrintIndex: true
+                    },
+                    take: 1,
+                    orderBy: {
+                        createdAt: 'desc'
+                    }
+                }
+            }
+        });
     }
     async getEmployeeCount() {
         return this.prisma.employee.count();
     }
     async getEmployee(employeeId) {
         return this.prisma.employee.findFirst({
-            where: { id: employeeId }
+            where: { id: employeeId },
+            include: {
+                fingerprints: {
+                    select: {
+                        fingerPrintIndex: true
+                    },
+                    take: 1,
+                    orderBy: {
+                        createdAt: 'desc'
+                    }
+                }
+            }
         });
     }
     async createEmployee(data) {

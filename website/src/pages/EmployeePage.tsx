@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import DashboardLayout from '../app/layouts/DashboardLayout'
 import { 
   Plus, Edit2, Trash2, X, ChevronLeft, ChevronRight, 
-  Search, Loader2 
+  Search, Loader2, Zap 
 } from 'lucide-react'
 import Swal from 'sweetalert2'
 
@@ -15,6 +15,7 @@ interface EmployeeRecord {
   phone: string
   role: string
   employeeStatus: 'Active' | 'On Leave' | 'Suspended' | 'Terminated'
+  fingerprintIndex: number | null // Optional fingerprint index
 }
 
 const darkSwal = Swal.mixin({
@@ -70,7 +71,8 @@ export default function EmployeePage() {
         email: ['sarah@skynet.com', 'james@hudson.dev', 'ripley@nostromo.org', 'john@gmail.com', 'marcus@cyber.io', 'kyle@resistance.net'][i % 6],
         phone: `+62 812-5555-88${String(10 + i).padStart(2, '0')}`,
         role: ['SecOps Lead', 'Cloud Engineer', 'Director', 'Frontend Dev', 'QA Engineer', 'Systems Analyst'][i % 6],
-        employeeStatus: statuses[i % 4]
+        employeeStatus: statuses[i % 4],
+        fingerprintIndex: i % 3 === 0 ? null : Math.floor(Math.random() * 10) // Some employees have fingerprints, some don't
       }
     })
     setLocalDatabase(mockDatabase)
@@ -158,6 +160,42 @@ export default function EmployeePage() {
           icon: 'success',
           title: 'Removed Successfully',
           text: 'The employee lifecycle reference was cleaned.',
+          timer: 1500,
+          showConfirmButton: false
+        })
+      }
+    })
+  }
+
+  const handleAssignFingerprint = (record: EmployeeRecord) => {
+    darkSwal.fire({
+      title: 'Register Fingerprint',
+      html: `<div class="text-left"><p class="text-sm mb-3">Assign fingerprint for: <strong>${record.fullName}</strong></p><label class="text-xs block mb-1">Fingerprint Index:</label><input type="number" id="fingerprintInput" class="w-full px-3 py-2 bg-neutral-950 border border-neutral-700 rounded text-neutral-200 text-sm" placeholder="Enter fingerprint index" min="0"></div>`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Assign',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true,
+      preConfirm: () => {
+        const input = (document.getElementById('fingerprintInput') as HTMLInputElement)?.value
+        if (!input || isNaN(Number(input))) {
+          Swal.showValidationMessage('Please enter a valid fingerprint index')
+          return false
+        }
+        return Number(input)
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const newIndex = result.value
+        setLocalDatabase(prev => prev.map(item => 
+          item.employeeNumber === record.employeeNumber 
+            ? { ...item, fingerprintIndex: newIndex }
+            : item
+        ))
+        darkSwal.fire({
+          icon: 'success',
+          title: 'Fingerprint Assigned',
+          text: `Fingerprint index ${newIndex} assigned to ${record.fullName}`,
           timer: 1500,
           showConfirmButton: false
         })
@@ -295,11 +333,10 @@ export default function EmployeePage() {
               <tr className="border-b border-neutral-800/60 bg-neutral-900/20 text-[11px] font-bold tracking-wider text-neutral-400 uppercase">
                 <th className="py-3.5 px-6">Emp Number</th>
                 <th className="py-3.5 px-6">Full Name</th>
-                <th className="py-3.5 px-6">Username</th>
-                <th className="py-3.5 px-6">Email Address</th>
-                <th className="py-3.5 px-6">Phone</th>
+                <th className="py-3.5 px-6">Contact Info</th>
                 <th className="py-3.5 px-6">Role</th>
                 <th className="py-3.5 px-6">Status</th>
+                <th className="py-3.5 px-6">Fingerprint</th>
                 <th className="py-3.5 px-6 text-right">Actions</th>
               </tr>
             </thead>
@@ -309,17 +346,37 @@ export default function EmployeePage() {
                   <tr key={row.employeeNumber} className="hover:bg-neutral-900/30 transition-colors">
                     <td className="py-4 px-6 font-mono font-medium text-neutral-500">{row.employeeNumber}</td>
                     <td className="py-4 px-6 font-semibold text-neutral-200">{row.fullName}</td>
-                    <td className="py-4 px-6 text-neutral-400 font-mono text-[11px]">{row.username}</td>
-                    <td className="py-4 px-6 text-neutral-400">{row.email}</td>
-                    <td className="py-4 px-6 font-mono text-neutral-400">{row.phone}</td>
+                    <td className="py-4 px-6">
+                      <div className="flex flex-col gap-1.5">
+                        <div className="text-neutral-400 font-mono text-[11px]">{row.username}</div>
+                        <div className="text-neutral-500 text-[10px]">{row.email}</div>
+                        <div className="font-mono text-neutral-500 text-[10px]">{row.phone}</div>
+                      </div>
+                    </td>
                     <td className="py-4 px-6 text-neutral-300 font-medium">{row.role}</td>
                     <td className="py-4 px-6">
                       <span className={`inline-block text-[10px] font-bold px-2.5 py-0.5 rounded-md border ${statusBadgeStyle[row.employeeStatus]}`}>
                         {row.employeeStatus}
                       </span>
                     </td>
+                    <td className="py-4 px-6">
+                      {row.fingerprintIndex !== null ? (
+                        <span className="inline-block text-[10px] font-bold px-2.5 py-0.5 rounded-md border bg-blue-500/10 text-blue-400 border-blue-500/20 font-mono">
+                          #{row.fingerprintIndex}
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-neutral-500 italic">Not assigned</span>
+                      )}
+                    </td>
                     <td className="py-4 px-6 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        <button 
+                          onClick={() => handleAssignFingerprint(row)}
+                          className="p-1.5 rounded-lg bg-neutral-950 border border-neutral-800/60 text-neutral-400 hover:text-blue-400 hover:border-blue-500/30 transition-colors"
+                          title="Assign Fingerprint"
+                        >
+                          <Zap className="w-3.5 h-3.5" />
+                        </button>
                         <button 
                           onClick={() => openEditModal(row)}
                           className="p-1.5 rounded-lg bg-neutral-950 border border-neutral-800/60 text-neutral-400 hover:text-indigo-400 hover:border-indigo-500/30 transition-colors"
@@ -340,7 +397,7 @@ export default function EmployeePage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-neutral-500 font-medium">
+                  <td colSpan={7} className="py-12 text-center text-neutral-500 font-medium">
                     No active personnel found matching query configuration.
                   </td>
                 </tr>

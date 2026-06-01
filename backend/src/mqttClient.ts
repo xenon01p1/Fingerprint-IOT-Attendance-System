@@ -10,11 +10,35 @@ client.on("connect", (): void => {
 });
 
 client.on("message", (topic: string, message: Buffer): void => {
-    const parsedMessage = message.toString();
-    console.log(`[${topic}]:`, parsedMessage);
+    const rawMessage = message.toString();
 
-    // You can handle routing to your WebSocket broadcast here
-    // Example: broadcast(topic, parsedMessage);
+    console.log(`[${topic}]:`, rawMessage);
+
+    try {
+        const data = JSON.parse(rawMessage);
+
+        if (topic === "sofie/iot/results") {
+            if (data.type === "register_success") {
+                console.log("Fingerprint registered successfully");
+                console.log("Fingerprint index:", data.fingerprintIndex);
+
+                broadcast({
+                    event: "register_success",
+                    fingerprintIndex: data.fingerprintIndex
+                });
+            }
+        }
+
+        if (topic === "sofie/status") {
+            broadcast({
+                event: "device_status",
+                data
+            });
+        }
+
+    } catch (error) {
+        console.error("Invalid JSON message:", rawMessage);
+    }
 });
 
 client.on("reconnect", (): void => {

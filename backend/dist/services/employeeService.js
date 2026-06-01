@@ -30,7 +30,8 @@ class EmployeeService {
                     status: employee.status,
                     companyId: employee.companyId,
                     createdAt: employee.createdAt,
-                    updatedAt: employee.updatedAt
+                    updatedAt: employee.updatedAt,
+                    fingerprintIndex: employee.fingerprints?.[0]?.fingerPrintIndex ?? null
                 })),
                 pagination: {
                     currentPage: validPage,
@@ -64,7 +65,8 @@ class EmployeeService {
             status: employeeData.status,
             companyId: employeeData.companyId,
             createdAt: employeeData.createdAt,
-            updatedAt: employeeData.updatedAt
+            updatedAt: employeeData.updatedAt,
+            fingerprintIndex: employeeData.fingerprints?.[0]?.fingerPrintIndex ?? null
         };
     }
     async createEmployeeService(data) {
