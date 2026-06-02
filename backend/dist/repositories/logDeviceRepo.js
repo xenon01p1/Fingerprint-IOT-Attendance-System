@@ -38,7 +38,10 @@ class LogDeviceRepository {
     }
     async createLogDevice(data) {
         return this.prisma.logDevice.create({
-            data: data,
+            data: {
+                type: data.type,
+                fingerprintId: data.fingerprintId
+            },
             include: {
                 fingerprint: true
             }

@@ -6,12 +6,16 @@ class FingerprintController {
     }
     fingerprintRegister = async (req, res, next) => {
         try {
-            const { fingerprintIndex } = req.body;
+            const { fingerprintIndex, employeeId, deviceId } = req.body;
+            if (!fingerprintIndex || !employeeId || !deviceId) {
+                throw new AppError("fingerprintIndex, employeeId, and deviceId are required", 400);
+            }
             const result = await this.fingerprintService
-                .registerFingerprintService(fingerprintIndex);
-            res.status(200).json({
+                .registerFingerprintService(fingerprintIndex, employeeId, deviceId);
+            res.status(201).json({
                 status: true,
-                message: result.message
+                message: result.message,
+                data: result.data
             });
         }
         catch (error) {

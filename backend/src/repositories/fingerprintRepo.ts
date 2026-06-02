@@ -13,6 +13,18 @@ class FingerprintRepository {
         });
     }
 
+    async findByDeviceAndIndex(
+        deviceId: string,
+        fingerprintIndex: number
+    ): Promise<Fingerprint | null> {
+        return this.prisma.fingerprint.findFirst({
+            where: {
+                deviceId,
+                fingerPrintIndex: fingerprintIndex
+            }
+        });
+    }
+
     async createFingerprint(
         data: {
             fingerPrintIndex: number,

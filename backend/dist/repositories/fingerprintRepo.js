@@ -11,6 +11,14 @@ class FingerprintRepository {
             where: { id: fingerprintId }
         });
     }
+    async findByDeviceAndIndex(deviceId, fingerprintIndex) {
+        return this.prisma.fingerprint.findFirst({
+            where: {
+                deviceId,
+                fingerPrintIndex: fingerprintIndex
+            }
+        });
+    }
     async createFingerprint(data) {
         return this.prisma.fingerprint.create({ data });
     }

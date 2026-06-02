@@ -10,22 +10,49 @@ class FingerprintService {
     ) {}
 
     async registerFingerprintService(
-        fingerprintIndex: number
+        fingerprintIndex: number,
+        employeeId: string,
+        deviceId: string
     ) {
-
         try {
+            const existing = await this.fingerprintRepository.findByDeviceAndIndex(
+                deviceId,
+                fingerprintIndex
+            );
+
+            if (existing) {
+                throw new AppError(
+                    "Fingerprint index already registered for this device",
+                    409
+                );
+            }
+
+            const fingerprint = await this.fingerprintRepository.createFingerprint({
+                fingerPrintIndex: fingerprintIndex,
+                employeeId,
+                deviceId
+            });
+
+            if (!fingerprint) {
+                throw new AppError(
+                    "Failed to save fingerprint to database",
+                    500
+                );
+            }
 
             const payload = JSON.stringify({
-                template_id: fingerprintIndex
+                type: "register",
+                fingerprintIndex,
+                template_id: fingerprintIndex,
+                employeeId,
+                deviceId
             });
 
             await new Promise<void>((resolve, reject) => {
-
                 this.mqttClient.publish(
                     "sofie/fingerprint/register",
                     payload,
                     (err) => {
-
                         if (err) reject(err);
                         else resolve();
                     }
@@ -34,13 +61,22 @@ class FingerprintService {
 
             return {
                 status: true,
-                message: "Fingerprint enrollment started"
+                message: "Fingerprint enrollment started",
+                data: {
+                    id: fingerprint.id,
+                    fingerprintIndex: fingerprint.fingerPrintIndex,
+                    employeeId: fingerprint.employeeId,
+                    deviceId: fingerprint.deviceId
+                }
             };
 
-        } catch {
+        } catch (error) {
+            if (error instanceof AppError) {
+                throw error;
+            }
 
             throw new AppError(
-                "Failed to publish fingerprint registration",
+                "Failed to register fingerprint",
                 500
             );
         }
@@ -49,36 +85,51 @@ class FingerprintService {
     async deleteFingerprintService(
         fingerprintId: string
     ) {
-
         try {
-            
+            const fingerprint = await this.fingerprintRepository.getFingerprint(
+                fingerprintId
+            );
+
+            if (!fingerprint) {
+                throw new AppError(
+                    "Fingerprint data not found",
+                    404
+                );
+            }
+
             const payload = JSON.stringify({
-                template_id: fingerprintId
+                type: "delete",
+                template_id: fingerprint.fingerPrintIndex,
+                fingerprintIndex: fingerprint.fingerPrintIndex,
+                deviceId: fingerprint.deviceId,
+                fingerprintId: fingerprint.id
             });
 
             await new Promise<void>((resolve, reject) => {
-
                 this.mqttClient.publish(
                     "sofie/fingerprint/delete",
                     payload,
                     (err) => {
-
                         if (err) reject(err);
                         else resolve();
                     }
                 );
             });
 
+            // Delete fingerprint from database
+            await this.fingerprintRepository.deleteFingerprint(fingerprintId);
+
             return {
                 status: true,
                 message: "Fingerprint deleted successfully",
                 data: {
-                    id: fingerprintId
+                    id: fingerprint.id,
+                    fingerprintIndex: fingerprint.fingerPrintIndex,
+                    deviceId: fingerprint.deviceId
                 }
             };
 
         } catch (error) {
-
             if (error instanceof AppError) {
                 throw error;
             }
