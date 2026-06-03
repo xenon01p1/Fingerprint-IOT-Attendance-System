@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import DashboardLayout from '../app/layouts/DashboardLayout'
 import { 
   Plus, Edit2, Trash2, X, ChevronLeft, ChevronRight, 
-  Search, Loader2, Zap 
+  Search, Loader2, Zap, XCircle 
 } from 'lucide-react'
 import Swal from 'sweetalert2'
 
@@ -203,6 +203,45 @@ export default function EmployeePage() {
     })
   }
 
+  const handleDeleteFingerprint = (record: EmployeeRecord) => {
+    if (record.fingerprintIndex === null) {
+      darkSwal.fire({
+        icon: 'info',
+        title: 'No Fingerprint',
+        text: 'This employee does not have a fingerprint assigned.',
+        timer: 1500,
+        showConfirmButton: false
+      })
+      return
+    }
+
+    darkSwal.fire({
+      title: 'Delete Fingerprint?',
+      text: `Remove fingerprint index #${record.fingerprintIndex} from ${record.fullName}?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Delete',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true,
+      confirmButtonColor: '#ef4444'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setLocalDatabase(prev => prev.map(item => 
+          item.employeeNumber === record.employeeNumber 
+            ? { ...item, fingerprintIndex: null }
+            : item
+        ))
+        darkSwal.fire({
+          icon: 'success',
+          title: 'Fingerprint Removed',
+          text: `Fingerprint unassigned from ${record.fullName}`,
+          timer: 1500,
+          showConfirmButton: false
+        })
+      }
+    })
+  }
+
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -377,6 +416,15 @@ export default function EmployeePage() {
                         >
                           <Zap className="w-3.5 h-3.5" />
                         </button>
+                        {row.fingerprintIndex !== null && (
+                          <button 
+                            onClick={() => handleDeleteFingerprint(row)}
+                            className="p-1.5 rounded-lg bg-neutral-950 border border-neutral-800/60 text-neutral-400 hover:text-rose-400 hover:border-rose-500/30 transition-colors"
+                            title="Delete Fingerprint"
+                          >
+                            <XCircle className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                         <button 
                           onClick={() => openEditModal(row)}
                           className="p-1.5 rounded-lg bg-neutral-950 border border-neutral-800/60 text-neutral-400 hover:text-indigo-400 hover:border-indigo-500/30 transition-colors"
