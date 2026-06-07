@@ -18,4 +18,5 @@ const fingerprintController = new FingerprintController(fingerprintService);
 // ======================
 fingerprintRoute.post("/register-fingerprint", fingerprintController.fingerprintRegister);
 fingerprintRoute.delete("/delete-fingerprint/:id", fingerprintController.deleteFingerprint);
+fingerprintRoute.get("/available-indexes/:deviceId", fingerprintController.getAvailableIndexes);
 export default fingerprintRoute;

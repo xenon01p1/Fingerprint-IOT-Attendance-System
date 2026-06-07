@@ -27,5 +27,12 @@ class FingerprintRepository {
             where: { id: fingerprintId }
         });
     }
+    async getUsedIndexesByDevice(deviceId) {
+        const fingerprints = await this.prisma.fingerprint.findMany({
+            where: { deviceId },
+            select: { fingerPrintIndex: true }
+        });
+        return fingerprints.map(fp => fp.fingerPrintIndex);
+    }
 }
 export default FingerprintRepository;

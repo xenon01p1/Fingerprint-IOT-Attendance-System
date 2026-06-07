@@ -32,4 +32,9 @@ fingerprintRoute.delete(
     fingerprintController.deleteFingerprint
 );
 
+fingerprintRoute.get(
+    "/available-indexes/:deviceId",
+    fingerprintController.getAvailableIndexes
+);
+
 export default fingerprintRoute;

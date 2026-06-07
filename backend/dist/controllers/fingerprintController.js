@@ -40,5 +40,22 @@ class FingerprintController {
             next(error);
         }
     };
+    getAvailableIndexes = async (req, res, next) => {
+        try {
+            const { deviceId } = req.params;
+            if (!deviceId) {
+                throw new AppError("Device ID is required", 400);
+            }
+            const result = await this.fingerprintService.getAvailableFingerprintIndexes(deviceId);
+            res.status(200).json({
+                status: true,
+                message: result.message,
+                data: result.data
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    };
 }
 export default FingerprintController;

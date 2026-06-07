@@ -19,7 +19,16 @@ export async function fetcher<T>(
   });
 
   if (!response.ok) {
-    throw new Error('Something went wrong');
+    let message = 'Something went wrong';
+
+    try {
+      const errorBody = await response.json();
+      message = errorBody?.message || message;
+    } catch {
+      // Keep the default message when the server does not return JSON.
+    }
+
+    throw new Error(message);
   }
 
   return response.json();

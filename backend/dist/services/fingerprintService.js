@@ -93,5 +93,30 @@ class FingerprintService {
             throw new AppError("Failed to delete fingerprint", 500);
         }
     }
+    async getAvailableFingerprintIndexes(deviceId) {
+        try {
+            console.log("Fetching used indexes for deviceId:", deviceId);
+            const usedIndexes = await this.fingerprintRepository.getUsedIndexesByDevice(deviceId);
+            console.log("Used indexes:", usedIndexes);
+            // Generate all available indexes from 1 to 127
+            const allIndexes = Array.from({ length: 127 }, (_, i) => i + 1);
+            // Filter out used indexes
+            const availableIndexes = allIndexes.filter(index => !usedIndexes.includes(index));
+            console.log("Available indexes count:", availableIndexes.length);
+            return {
+                status: true,
+                message: "Available fingerprint indexes retrieved",
+                data: {
+                    availableIndexes,
+                    usedIndexes,
+                    totalAvailable: availableIndexes.length
+                }
+            };
+        }
+        catch (error) {
+            console.error("Error getting available indexes:", error);
+            throw new AppError("Failed to retrieve available fingerprint indexes", 500);
+        }
+    }
 }
 export default FingerprintService;

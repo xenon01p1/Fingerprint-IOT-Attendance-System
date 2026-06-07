@@ -5,9 +5,11 @@ import {
   Search, Loader2, Zap, XCircle 
 } from 'lucide-react'
 import Swal from 'sweetalert2'
+import { fetcher } from '../services/fetcher'
 
 // Interface representing the explicit Employee fields
 interface EmployeeRecord {
+  id: string
   employeeNumber: string // Serves as the unique ID / Identifier
   fullName: string
   username: string
@@ -17,6 +19,41 @@ interface EmployeeRecord {
   employeeStatus: 'Active' | 'On Leave' | 'Suspended' | 'Terminated'
   fingerprintIndex: number | null // Optional fingerprint index
 }
+
+interface EmployeeApiRecord {
+  id: string
+  employeeNumber: number
+  fullname: string
+  username: string
+  email: string
+  phoneNumber: string
+  role: string
+  employeeStatus: 'active' | 'onLeave' | 'resigned'
+  status: 'active' | 'banned' | 'deleted'
+  fingerprintIndex: number | null
+}
+
+const mapEmployeeStatus = (
+  employeeStatus: EmployeeApiRecord['employeeStatus'],
+  status: EmployeeApiRecord['status']
+): EmployeeRecord['employeeStatus'] => {
+  if (status === 'banned') return 'Suspended'
+  if (status === 'deleted' || employeeStatus === 'resigned') return 'Terminated'
+  if (employeeStatus === 'onLeave') return 'On Leave'
+  return 'Active'
+}
+
+const mapEmployeeFromApi = (employee: EmployeeApiRecord): EmployeeRecord => ({
+  id: employee.id,
+  employeeNumber: String(employee.employeeNumber),
+  fullName: employee.fullname,
+  username: employee.username,
+  email: employee.email,
+  phone: employee.phoneNumber,
+  role: employee.role,
+  employeeStatus: mapEmployeeStatus(employee.employeeStatus, employee.status),
+  fingerprintIndex: employee.fingerprintIndex
+})
 
 const darkSwal = Swal.mixin({
   background: '#171717', 
@@ -48,7 +85,7 @@ export default function EmployeePage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add')
   const [editingRecord, setEditingRecord] = useState<EmployeeRecord | null>(null)
-  
+
   // Form Field States explicitly tailored for creation & adjustment parameters
   const [formData, setFormData] = useState({
     fullName: '',
@@ -59,23 +96,66 @@ export default function EmployeePage() {
     role: '',
     employeeStatus: 'Active'
   })
+  // Default device ID and available fingerprint indexes
+  const [deviceId, setDeviceId] = useState<string>('')
+  const [, setAvailableFingerprintIndexes] = useState<number[]>([])
 
-  // Populate localized dummy structure matching requirements
+  // Fetch employees from backend so fingerprint registration uses real employee IDs
   useEffect(() => {
-    const mockDatabase = Array.from({ length: 24 }, (_, i) => {
-      const statuses: EmployeeRecord['employeeStatus'][] = ['Active', 'On Leave', 'Suspended', 'Active']
-      return {
-        employeeNumber: `EMP-${202600 + i}`,
-        fullName: ['Sarah Connor', 'James Hudson', 'Ellen Ripley', 'John Doe', 'Marcus Wright', 'Kyle Reese'][i % 6],
-        username: ['sarah_c', 'james_h', 'ripley_e', 'johndoe', 'marcus_w', 'kyle_r'][i % 6] + (i > 5 ? i : ''),
-        email: ['sarah@skynet.com', 'james@hudson.dev', 'ripley@nostromo.org', 'john@gmail.com', 'marcus@cyber.io', 'kyle@resistance.net'][i % 6],
-        phone: `+62 812-5555-88${String(10 + i).padStart(2, '0')}`,
-        role: ['SecOps Lead', 'Cloud Engineer', 'Director', 'Frontend Dev', 'QA Engineer', 'Systems Analyst'][i % 6],
-        employeeStatus: statuses[i % 4],
-        fingerprintIndex: i % 3 === 0 ? null : Math.floor(Math.random() * 10) // Some employees have fingerprints, some don't
+    const fetchEmployees = async () => {
+      setIsLoading(true)
+      try {
+        const response = await fetcher<{
+          status: boolean
+          message: string
+          data: {
+            items: EmployeeApiRecord[]
+            pagination: { currentPage: number; pageSize: number; totalItems: number; totalPages: number }
+          }
+        }>('/api/employee?page=1&pageSize=100')
+
+        if (response.status && response.data.items) {
+          setLocalDatabase(response.data.items.map(mapEmployeeFromApi))
+        }
+      } catch (error) {
+        console.error('Failed to fetch employees:', error)
+        darkSwal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to fetch employees from backend',
+          timer: 1500,
+          showConfirmButton: false
+        })
+      } finally {
+        setIsLoading(false)
       }
-    })
-    setLocalDatabase(mockDatabase)
+    }
+
+    fetchEmployees()
+  }, [])
+
+  // Fetch the first device ID on component mount
+  useEffect(() => {
+    const fetchFirstDevice = async () => {
+      try {
+        const response = await fetcher<{
+          status: boolean
+          message: string
+          data: {
+            items: Array<{ id: string; name: string }>
+            pagination: { currentPage: number; pageSize: number; totalItems: number; totalPages: number }
+          }
+        }>('/api/device?page=1&pageSize=1')
+        
+        if (response.data.items && response.data.items.length > 0) {
+          setDeviceId(response.data.items[0].id)
+        }
+      } catch (error) {
+        console.error('Failed to fetch device:', error)
+      }
+    }
+
+    fetchFirstDevice()
   }, [])
 
   // Process sorting, matching criteria and pagination slices
@@ -115,6 +195,44 @@ export default function EmployeePage() {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value)
     setCurrentPage(1)
+  }
+
+  // Fetch available fingerprint indexes from backend
+  const fetchAvailableFingerprintIndexes = async (): Promise<number[]> => {
+    if (!deviceId) {
+      console.error('Device ID not loaded yet')
+      return []
+    }
+
+    try {
+      const response = await fetcher<{
+        status: boolean
+        message: string
+        data: {
+          availableIndexes: number[]
+          usedIndexes: number[]
+          totalAvailable: number
+        }
+      }>(`/api/fingerprint/available-indexes/${deviceId}`)
+      
+      if (response.status && response.data.availableIndexes) {
+        setAvailableFingerprintIndexes(response.data.availableIndexes)
+        console.log("Available indexes fetched:", response.data.availableIndexes)
+        console.log("Used indexes:", response.data.usedIndexes)
+        return response.data.availableIndexes
+      }
+    } catch (error) {
+      console.error('Failed to fetch available fingerprint indexes:', error)
+      darkSwal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to fetch available fingerprint indexes',
+        timer: 1500,
+        showConfirmButton: false
+      })
+    }
+
+    return []
   }
 
   // --- CRUD Actions ---
@@ -167,38 +285,86 @@ export default function EmployeePage() {
     })
   }
 
-  const handleAssignFingerprint = (record: EmployeeRecord) => {
+  const handleAssignFingerprint = async (record: EmployeeRecord) => {
+    // Fetch available indexes first
+    const indexes = await fetchAvailableFingerprintIndexes()
+
+    // Create select options HTML
+    const selectOptions = indexes
+      .map(index => `<option value="${index}">${index}</option>`)
+      .join('')
+
+    if (indexes.length === 0) {
+      darkSwal.fire({
+        icon: 'warning',
+        title: 'No Available Indexes',
+        text: 'All fingerprint indexes (1-127) for this device are already assigned.',
+        confirmButtonText: 'OK'
+      })
+      return
+    }
+
     darkSwal.fire({
       title: 'Register Fingerprint',
-      html: `<div class="text-left"><p class="text-sm mb-3">Assign fingerprint for: <strong>${record.fullName}</strong></p><label class="text-xs block mb-1">Fingerprint Index:</label><input type="number" id="fingerprintInput" class="w-full px-3 py-2 bg-neutral-950 border border-neutral-700 rounded text-neutral-200 text-sm" placeholder="Enter fingerprint index" min="0"></div>`,
+      html: `<div class="text-left"><p class="text-sm mb-3">Assign fingerprint for: <strong>${record.fullName}</strong></p><label class="text-xs block mb-1">Fingerprint Index:</label><select id="fingerprintSelect" class="w-full px-3 py-2 bg-neutral-950 border border-neutral-700 rounded text-neutral-200 text-sm"><option value="">-- Select Index --</option>${selectOptions}</select></div>`,
       icon: 'question',
       showCancelButton: true,
       confirmButtonText: 'Assign',
       cancelButtonText: 'Cancel',
       reverseButtons: true,
       preConfirm: () => {
-        const input = (document.getElementById('fingerprintInput') as HTMLInputElement)?.value
-        if (!input || isNaN(Number(input))) {
-          Swal.showValidationMessage('Please enter a valid fingerprint index')
+        const select = (document.getElementById('fingerprintSelect') as HTMLSelectElement)?.value
+        if (!select) {
+          Swal.showValidationMessage('Please select a fingerprint index')
           return false
         }
-        return Number(input)
+        return Number(select)
       }
     }).then((result) => {
       if (result.isConfirmed) {
         const newIndex = result.value
-        setLocalDatabase(prev => prev.map(item => 
-          item.employeeNumber === record.employeeNumber 
-            ? { ...item, fingerprintIndex: newIndex }
-            : item
-        ))
-        darkSwal.fire({
-          icon: 'success',
-          title: 'Fingerprint Assigned',
-          text: `Fingerprint index ${newIndex} assigned to ${record.fullName}`,
-          timer: 1500,
-          showConfirmButton: false
+        fetcher<{
+          status: boolean
+          message: string
+          data: {
+            id: string
+            fingerprintIndex: number
+            employeeId: string
+            deviceId: string
+          }
+        }>('/api/fingerprint/register-fingerprint', {
+          method: 'POST',
+          body: JSON.stringify({
+            fingerprintIndex: newIndex,
+            employeeId: record.id,
+            deviceId
+          })
         })
+          .then(() => {
+            setLocalDatabase(prev => prev.map(item => 
+              item.employeeNumber === record.employeeNumber 
+                ? { ...item, fingerprintIndex: newIndex }
+                : item
+            ))
+            setAvailableFingerprintIndexes(prev => prev.filter(index => index !== newIndex))
+            darkSwal.fire({
+              icon: 'success',
+              title: 'Fingerprint Assigned',
+              text: `Fingerprint index ${newIndex} assigned to ${record.fullName}`,
+              timer: 1500,
+              showConfirmButton: false
+            })
+          })
+          .catch((error) => {
+            console.error('Failed to register fingerprint:', error)
+            darkSwal.fire({
+              icon: 'error',
+              title: 'Registration Failed',
+              text: error instanceof Error ? error.message : 'Failed to register fingerprint',
+              timer: 1800,
+              showConfirmButton: false
+            })
+          })
       }
     })
   }
@@ -263,13 +429,15 @@ export default function EmployeePage() {
       if (modalMode === 'add') {
         const nextEmpId = `EMP-${202600 + localDatabase.length + Math.floor(Math.random() * 100)}`
         const newRecord: EmployeeRecord = {
+          id: nextEmpId,
           employeeNumber: nextEmpId,
           fullName: formData.fullName,
           username: formData.username,
           email: formData.email,
           phone: formData.phone,
           role: formData.role,
-          employeeStatus: formData.employeeStatus as EmployeeRecord['employeeStatus']
+          employeeStatus: formData.employeeStatus as EmployeeRecord['employeeStatus'],
+          fingerprintIndex: null
         }
         setLocalDatabase(prev => [newRecord, ...prev])
         setCurrentPage(1)
