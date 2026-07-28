@@ -1,60 +1,8 @@
-# services:
-#   web:
-#     depends_on:
-#       - backend 
-#     build:
-#       context: ./website
-#       dockerfile: Dockerfile
-#     ports:
-#       - "3000:80"
-#     develop:
-#       watch:
-#         - path: ./package.json
-#           action: rebuild
-#         - path: ./package-lock.lock
-#           action: rebuild
-#         - path: ./website
-#           target: /src
-#           action: sync
-
-#   backend:
-#     depends_on:
-#       - db
-#     environment:
-#       DATABASE_URL: mysql://root:password@db:3306/fingerprint
-#     build:
-#       context: ./backend
-#       dockerfile: Dockerfile
-#     ports:
-#       - "8000:8000"
-#     develop:
-#       watch:
-#         - path: ./backend/package.json
-#           action: rebuild
-#         - path: ./backend/package-lock.json
-#           action: rebuild
-#         - path: ./backend
-#           action: sync
-
-#   db:
-#     image: mariadb:11
-  
-#     environment:
-#       # MARIADB_ROOT_PASSWORD: 
-#       # MARIADB_DATABASE: fingerprint
-#       # MARIADB_USER: root
-#       # MARIADB_PASSWORD: 
-#       MARIADB_ROOT_PASSWORD: password
-#       MARIADB_DATABASE: fingerprint
-
-#     volumes:
-#       - mariadb_data:/var/lib/mysql
-          
-
 services:
   web:
     depends_on:
-      - backend
+      backend:
+        condition: service_started
     build:
       context: ./website
       dockerfile: Dockerfile
@@ -63,7 +11,8 @@ services:
 
   backend:
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -75,13 +24,22 @@ services:
   db:
     image: mariadb:11
     restart: unless-stopped
+    command: --lower-case-table-names=1
     environment:
       MARIADB_ROOT_PASSWORD: password
       MARIADB_DATABASE: fingerprint
+      MARIADB_USER: fingerprint
+      MARIADB_PASSWORD: fingerprint123
     ports:
-      - "3306:3306"
+      - "3308:3306"
     volumes:
       - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
 volumes:
   mariadb_data:

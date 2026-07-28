@@ -19,7 +19,9 @@ class AuthService {
         }  
 
         // add password verification logic
-        if (!bcrypt.compare(password, admin.password)) {
+        const isMatch = await bcrypt.compare(password, admin.password);
+
+        if (!isMatch) {
             throw new Error("Invalid password");
         }
 
