@@ -1,14 +1,10 @@
--- DropForeignKey
-ALTER TABLE `fingerprint` DROP FOREIGN KEY `Fingerprint_deviceId_fkey`;
+ALTER TABLE `Fingerprint` DROP FOREIGN KEY `Fingerprint_deviceId_fkey`;
 
--- DropForeignKey
-ALTER TABLE `fingerprint` DROP FOREIGN KEY `Fingerprint_employeeId_fkey`;
+ALTER TABLE `Fingerprint` DROP FOREIGN KEY `Fingerprint_employeeId_fkey`;
 
--- DropIndex
-DROP INDEX `Fingerprint_deviceId_fkey` ON `fingerprint`;
+DROP INDEX `Fingerprint_deviceId_fkey` ON `Fingerprint`;
 
--- DropIndex
-DROP INDEX `Fingerprint_employeeId_fkey` ON `fingerprint`;
+DROP INDEX `Fingerprint_employeeId_fkey` ON `Fingerprint`;
 
 -- CreateTable
 CREATE TABLE `Attendance` (
