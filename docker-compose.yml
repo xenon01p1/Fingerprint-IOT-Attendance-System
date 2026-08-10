@@ -23,7 +23,6 @@ services:
 
   db:
     image: mariadb:11
-    restart: unless-stopped
     command: --lower-case-table-names=1
     environment:
       MARIADB_ROOT_PASSWORD: password

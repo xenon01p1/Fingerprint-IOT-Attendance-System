@@ -1,5 +1,6 @@
 import AdminRepository from "../repositories/adminRepo.js";
 import { AppError } from "../middlewares/globalErrorMiddleware.js";
+import bcrypt from "bcrypt";
 
 class AdminService {
     constructor(private adminRepo: AdminRepository) {}
@@ -69,8 +70,15 @@ class AdminService {
         email: string,
         phoneNumber: string
     ) {
-        const createAdminResult = await this.adminRepo.createAdmin(username, password, email, phoneNumber);
-        
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const createAdminResult = await this.adminRepo.createAdmin(
+            username,
+            hashedPassword,
+            email,
+            phoneNumber
+        );
+
         if (!createAdminResult) {
             throw new Error("Admin data not found");
         }  
@@ -89,7 +97,13 @@ class AdminService {
             phoneNumber?: string;
         }
     ) {
-        const updateAdminResult = await this.adminRepo.updateAdmin(adminId, data);
+        const updateData = { ...data };
+
+        if (data.password) {
+            updateData.password = await bcrypt.hash(data.password, 10);
+        }
+
+        const updateAdminResult = await this.adminRepo.updateAdmin(adminId, updateData);
         
         if (!updateAdminResult) {
             throw new Error("Admin data not found");
