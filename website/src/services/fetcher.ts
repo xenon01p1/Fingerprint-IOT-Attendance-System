@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = 'http://160.19.166.239:8000';
 
 type FetchOptions = RequestInit & {
   skipAuth?: boolean;
