@@ -24,6 +24,8 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
 
           script: |
+            set -e
+
             cd /var/www/fingerprint
 
             git pull origin main
